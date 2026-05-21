@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Vademécum Clínico</title>
+    <!-- Tailwind CSS para el diseño responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        clinical: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            800: '#0c4a6e',
+                        },
+                        danger: {
+                            50: '#fef2f2',
+                            500: '#ef4444',
+                            700: '#b91c1c',
+                        },
+                        warning: {
+                            50: '#fffbeb',
+                            500: '#f59e0b',
+                            700: '#b45309',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Iconos Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Estilos de Impresión Optimizados -->
+    <style>
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-card {
+                border: 2px solid #000 !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 1.5rem !important;
+            }
+            .print-container {
+                display: block !important;
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen font-sans flex flex-col antialiased">
+
+    <!-- Encabezado / Navbar (Simplificado - Sin botones de edición ni carga) -->
+    <header class="bg-gradient-to-r from-clinical-800 to-clinical-600 text-white shadow-md no-print">
+        <div class="max-w-7xl mx-auto px-4 py-5 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/15 p-2.5 rounded-xl backdrop-blur-sm border border-white/10">
+                    <i data-lucide="book-open-check" class="w-8 h-8 text-sky-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">Vademécum Clínico</h1>
+                    <p class="text-xs text-sky-100 font-medium">Catálogo Digital de Medicamentos de Consulta Rápida</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs bg-white/10 px-3 py-1.5 rounded-full border border-white/10">
+                <span class="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse"></span>
+                <span class="font-medium">Modo Catálogo Activo</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+
+        <!-- Barra de Búsqueda y Filtros de Consulta -->
+        <section class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-4 no-print">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                <!-- Buscador principal -->
+                <div class="relative md:col-span-5">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <i data-lucide="search" class="w-5 h-5"></i>
+                    </div>
+                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Buscar por medicamento, composición o indicaciones..." class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinical-500 focus:border-clinical-500 text-sm">
+                </div>
+                
+                <!-- Filtrar por Vía -->
+                <div class="md:col-span-3">
+                    <select id="routeFilter" onchange="applyFilters()" class="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinical-500 text-sm">
+                        <option value="">Vía de Administración (Todas)</option>
+                        <option value="IV">Intravenosa (IV)</option>
+                        <option value="IM">Intramuscular (IM)</option>
+                        <option value="VO">Vía Oral (VO)</option>
+                        <option value="SC">Subcutánea (SC)</option>
+                    </select>
+                </div>
+
+                <!-- Filtrar por Gravedad/Advertencias -->
+                <div class="md:col-span-2">
+                    <select id="alertFilter" onchange="applyFilters()" class="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinical-500 text-sm">
+                        <option value="">Nivel Alerta (Todos)</option>
+                        <option value="critical">Crítica (Rojo)</option>
+                        <option value="warning">Advertencia (Ámbar)</option>
+                        <option value="standard">Normal</option>
+                    </select>
+                </div>
+
+                <!-- Ordenamiento -->
+                <div class="md:col-span-2">
+                    <select id="sortSelect" onchange="applyFilters()" class="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinical-500 text-sm">
+                        <option value="index-asc">Orden original (N°)</option>
+                        <option value="name-asc">Nombre (A-Z)</option>
+                        <option value="name-desc">Nombre (Z-A)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Métricas Informativas Simplificadas (Sin botones de acción) -->
+            <div class="flex flex-wrap items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-500 gap-3">
+                <div class="flex gap-5">
+                    <span>Total Medicamentos: <strong id="statTotal" class="text-slate-800">0</strong></span>
+                    <span>Vía IV/Inyectable: <strong id="statIV" class="text-slate-800">0</strong></span>
+                    <span>Alertas Críticas: <strong id="statCritical" class="text-red-600 font-semibold">0</strong></span>
+                </div>
+                <div class="text-slate-400 italic">
+                    Haz clic en cualquier tarjeta para ver su ficha técnica completa
+                </div>
+            </div>
+        </section>
+
+        <!-- Grid de Tarjetas de Medicamentos -->
+        <section id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Cargado dinámicamente -->
+        </section>
+
+        <!-- Estado de no resultados -->
+        <div id="noResults" class="hidden text-center py-16 bg-white border border-slate-200 rounded-2xl p-8 max-w-md mx-auto my-8 flex flex-col items-center gap-3">
+            <div class="p-3 bg-slate-100 text-slate-400 rounded-full">
+                <i data-lucide="alert-circle" class="w-8 h-8"></i>
+            </div>
+            <h3 class="font-bold text-lg text-slate-800">No se encontraron medicamentos</h3>
+            <p class="text-sm text-slate-500">Prueba ajustando los términos de búsqueda o eliminando los filtros seleccionados.</p>
+            <button onclick="clearFiltersAndSearch()" class="mt-2 bg-clinical-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-clinical-700 transition-colors">Limpiar filtros</button>
+        </div>
+    </main>
+
+    <!-- Modal Detalle Ficha (Lectura / Impresión - Sin botones de edición o borrado) -->
+    <div id="detailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- Encabezado Modal -->
+            <div id="modalHeader" class="px-6 py-4 text-white flex justify-between items-start">
+                <div>
+                    <span id="modalIndex" class="inline-block text-[10px] uppercase font-bold tracking-wider bg-white/20 px-2 py-0.5 rounded-full mb-1">Ficha N° 0</span>
+                    <h2 id="modalTitle" class="text-2xl font-bold leading-tight">Cargando...</h2>
+                    <p id="modalComposition" class="text-sm text-white/85 italic mt-1"></p>
+                </div>
+                <button onclick="closeModal('detailModal')" class="bg-white/10 hover:bg-white/20 p-1.5 rounded-lg transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <!-- Cuerpo del Modal -->
+            <div class="p-6 overflow-y-auto space-y-5" id="modalBody">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-4">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><i data-lucide="activity" class="w-3.5 h-3.5"></i> Indicaciones</span>
+                            <p id="modalIndications" class="mt-1 text-slate-700 text-sm font-medium leading-relaxed"></p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> Contraindicaciones</span>
+                            <p id="modalContraindications" class="mt-1 text-red-700 bg-red-50 p-2.5 rounded-lg border border-red-100 text-sm leading-relaxed"></p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><i data-lucide="pill" class="w-3.5 h-3.5"></i> Posología</span>
+                            <p id="modalPosology" class="mt-1 text-clinical-800 bg-clinical-50 p-2.5 rounded-lg border border-clinical-100 text-sm font-semibold leading-relaxed"></p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><i data-lucide="package" class="w-3.5 h-3.5"></i> Presentación</span>
+                            <p id="modalPresentation" class="mt-1 text-slate-700 text-sm leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-100 pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Reacciones Adversas</span>
+                        <p id="modalAdverse" class="mt-1 text-amber-700 bg-amber-50/50 p-2.5 rounded-lg border border-amber-100 text-sm leading-relaxed"></p>
+                    </div>
+                    <div id="modalWarningContainer">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><i data-lucide="octagon" class="w-3.5 h-3.5"></i> Advertencias y Precauciones</span>
+                        <p id="modalWarnings" class="mt-1 text-sm leading-relaxed p-2.5 rounded-lg"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer del Modal (Solo imprimir y cerrar) -->
+            <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-between items-center">
+                <button onclick="closeModal('detailModal')" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100 transition-colors">
+                    Cerrar
+                </button>
+                <button id="modalPrintBtn" class="flex items-center gap-1.5 bg-clinical-600 hover:bg-clinical-700 px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-colors shadow-sm">
+                    <i data-lucide="printer" class="w-4 h-4"></i> Imprimir Ficha de Bolsillo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Área de impresión oculta en pantalla -->
+    <div id="printArea" class="hidden print-container"></div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-6 mt-12 border-t border-slate-800 no-print">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+            <p class="font-medium text-slate-300">Vademécum Clínico Profesional • Visualizador Médico Estático</p>
+            <p>La información contenida tiene fines formativos e informativos. Utilice con prudencia profesional bajo guías institucionales.</p>
+        </div>
+    </footer>
+
+    <!-- Script Principal con la Base de Datos Completa -->
+    <script>
+        // Listado de los 30 medicamentos cargados de medicamentos.csv
+        const MEDICAMENTS_DATABASE = [
+            {
+                number: "1",
+                name: "Ácido Tranexámico (Amchafibrin)",
+                composition: "Ácido tranexámico (100 mg/ml).",
+                indications: "Hemorragias graves, cirugías con alto riesgo de sangrado, hiperfibrinólisis.",
+                contraindications: "Hipersensibilidad, tasis trombótica activa, antecedentes de trombosis venosa o arterial.",
+                posology: "IV: 10-15 mg/kg cada 8h. Ajustar en falla renal.",
+                presentation: "Ampollas inyectables, comprimidos.",
+                adverse: "Hipotensión (si se inyecta rápido), náuseas, vómitos, visión borrosa.",
+                warnings: "Crítica: Riesgo de trombosis. Administrar en infusión lenta (mínimo 20-30 min)."
+            },
+            {
+                number: "2",
+                name: "Ácido Valproico (Depakene, Valcote)",
+                composition: "Valproato sódico / Ácido valproico.",
+                indications: "Epilepsia (crisis generalizadas/focales), episodios maníacos en trastorno bipolar.",
+                contraindications: "Hipersensibilidad, enfermedad hepática activa, porfiria hepática.",
+                posology: "VO/IV: 15-30 mg/kg/día dividido en 2-3 dosis.",
+                presentation: "Ampollas inyectables, jarabe, tabletas.",
+                adverse: "Temblor, somnolencia, aumento de peso, trombocitopenia, náuseas.",
+                warnings: "Crítica: Teratógeno estricto. Monitorear función hepática y hemograma."
+            },
+            {
+                number: "3",
+                name: "Adenosina (Adenocor)",
+                composition: "Adenosina (3 mg/ml).",
+                indications: "Conversión rápida a ritmo sinusal de taquicardias supraventriculares (TSVP).",
+                contraindications: "Bloqueo AV de segundo o tercer grado (salvo marcapasos), síndrome del seno enfermo, asma grave.",
+                posology: "IV: Bolo rápido de 6 mg (en 1-2 s); si no revierte en 1-2 min, dar 12 mg; si es necesario, otro bolo de 12 mg.",
+                presentation: "Ampollas inyectables.",
+                adverse: "Rubor facial, disnea, opresión torácica, bradicardia transitoria.",
+                warnings: "Crítica: Administrar en bolo IV ultrarrápido (1-2 seg) seguido de un lavado rápido con solución salina de 20 ml."
+            },
+            {
+                number: "4",
+                name: "Adrenalina (Epinefrina)",
+                composition: "Adrenalina clorhidrato 1 mg/ml.",
+                indications: "Paro cardiorrespiratorio, anafilaxia grave, shock cardiogénico, asma refractario.",
+                contraindications: "No hay contraindicaciones absolutas en situaciones de emergencia vital.",
+                posology: "PCR: IV/IO: 1 mg cada 3-5 minutos. Anafilaxia: IM: 0.3-0.5 mg.",
+                presentation: "Ampolla inyectable.",
+                adverse: "Taquicardia, arritmias, hipertensión severa, ansiedad, temblores.",
+                warnings: "Crítica: En pacientes conscientes con anafilaxia siempre preferir vía IM para evitar arritmias letales."
+            },
+            {
+                number: "5",
+                name: "Amiodarona (Atlansil)",
+                composition: "Clorhidrato de amiodarona 150 mg/3 ml.",
+                indications: "Arritmias ventriculares graves, fibrilación ventricular, taquicardia ventricular sin pulso.",
+                contraindications: "Disfunción sinusal grave, bloqueos de conducción de segundo o tercer grado, shock cardiogénico.",
+                posology: "PCR: Bolo IV/IO de 300 mg; segundo bolo opcional de 150 mg. Perfusión de mantenimiento.",
+                presentation: "Ampolla inyectable.",
+                adverse: "Bradicardia, hipotensión, toxicidad pulmonar (uso crónico), prolongación del QT.",
+                warnings: "Crítica: Diluir exclusivamente en Solución Dextrosa al 5%. Nunca diluir en solución salina."
+            },
+            {
+                number: "6",
+                name: "Atropina (Sulfato de Atropina)",
+                composition: "Sulfato de atropina 1 mg/ml.",
+                indications: "Bradicardia sinusal sintomática, bloqueo AV, antídoto en intoxicaciones por organofosforados.",
+                contraindications: "Glaucoma de ángulo cerrado, retención urinaria severa, estenosis pilórica.",
+                posology: "Bradicardia: IV: 0.5 a 1 mg cada 3-5 minutos (máximo total 3 mg).",
+                presentation: "Ampolla inyectable.",
+                adverse: "Xerostomía, visión borrosa, taquicardia, retención urinaria, confusión.",
+                warnings: "Evitar dosis menores a 0.5 mg en adultos, ya que puede desencadenar una bradicardia paradójica."
+            },
+            {
+                number: "7",
+                name: "Bicarbonato de Sodio 8.4%",
+                composition: "Bicarbonato de sodio 1 mEq/ml.",
+                indications: "Acidosis metabólica severa, hiperpotasemia grave, intoxicación por antidepresivos tricíclicos.",
+                contraindications: "Alcalosis metabólica o respiratoria, hipocalcemia severa.",
+                posology: "IV lenta: 1 mEq/kg inicialmente, reajustar según estado gasométrico.",
+                presentation: "Frascos ampolla o ampollas inyectables.",
+                adverse: "Alcalosis metabólica, hipernatremia, hipopotasemia, sobrecarga de volumen.",
+                warnings: "Crítica: No mezclar en la misma vía con otros fármacos (ej. Adrenalina o Gluconato de Calcio) debido al riesgo de precipitación."
+            },
+            {
+                number: "8",
+                name: "Cloruro de Potasio (KCl)",
+                composition: "Cloruro de potasio (3M o 1 mEq/ml, según ampolla).",
+                indications: "Tratamiento y prevención de la hipopotasemia severa.",
+                contraindications: "Hiperpotasemia severa, insuficiencia renal aguda o anuria.",
+                posology: "Perfusión IV lenta diluida. Velocidad máxima recomendada de 10-20 mEq/hora.",
+                presentation: "Ampollas inyectables.",
+                adverse: "Dolor en sitio de inyección, flebitis, hiperpotasemia, arritmias graves si se administra rápido.",
+                warnings: "Crítica: PROHIBIDA LA ADMINISTRACIÓN DIRECTA EN BOLO IV. Puede provocar paro cardíaco instantáneo. Diluir siempre."
+            },
+            {
+                number: "9",
+                name: "Cloruro de Sodio 20% (Hipertónico)",
+                composition: "Cloruro de sodio 20% (3.4 mEq/ml).",
+                indications: "Tratamiento de la hiponatremia severa sintomática, reducción de la hipertensión intracraneal.",
+                contraindications: "Hipernatremia, retención de líquidos severa, edema generalizado.",
+                posology: "IV: Infundir de forma diluida muy lenta bajo estricto monitoreo de sodio sérico.",
+                presentation: "Ampollas de 10 ml y 20 ml.",
+                adverse: "Mielinólisis póntica central (si se corrige muy rápido), hipernatremia, flebitis.",
+                warnings: "Crítica: No administrar sin dilución previa. El monitoreo estrecho de electrólitos es mandatorio."
+            },
+            {
+                number: "10",
+                name: "Diazepam (Valium)",
+                composition: "Diazepam 5 mg/ml.",
+                indications: "Estatus epiléptico, espasmos musculares severos, sedación previa a procedimientos, ansiedad aguda.",
+                contraindications: "Depresión respiratoria severa, insuficiencia hepática grave, miastenia gravis.",
+                posology: "IV lenta: 5-10 mg en bolo de emergencia; repetir en 10-15 min si es necesario (máximo 30 mg).",
+                presentation: "Ampollas inyectables, comprimidos.",
+                adverse: "Somnolencia, bradicardia, depresión respiratoria, hipotensión.",
+                warnings: "Crítica: Monitorear patrón respiratorio y estado de consciencia durante y tras su aplicación."
+            },
+            {
+                number: "11",
+                name: "Dobutamina (Dobutrex)",
+                composition: "Dobutamina clorhidrato 250 mg/20 ml.",
+                indications: "Shock cardiogénico, insuficiencia cardíaca aguda descompensada, soporte inotrópico.",
+                contraindications: "Estenosis subaórtica hipertrófica idiopática, hipersensibilidad comprobada.",
+                posology: "Infusión IV continua: 2.5 a 15 mcg/kg/min ajustando según respuesta hemodinámica.",
+                presentation: "Ampolla o vial para perfusión.",
+                adverse: "Taquicardia extrema, hipertensión, arritmias ventriculares, cefalea.",
+                warnings: "Crítica: Corregir siempre la hipovolemia antes de iniciar infusión. Administrar idealmente por vía central."
+            },
+            {
+                number: "12",
+                name: "Dopamina",
+                composition: "Dopamina clorhidrato 200 mg/5 ml.",
+                indications: "Shock hemodinámico (cardiogénico, séptico), hipotensión grave refractaria a fluidos.",
+                contraindications: "Feocromocitoma, taquiarritmias no controladas o fibrilación ventricular.",
+                posology: "Infusión IV continua: Dosis beta/inotrópica de 2-10 mcg/kg/min; Alfa/vasopresora de 10-20 mcg/kg/min.",
+                presentation: "Ampollas inyectables.",
+                adverse: "Taquicardia, extrasístoles ventriculares, vasoconstricción periférica severa, náuseas.",
+                warnings: "Crítica: Extremadamente vesicante. La extravasación puede causar necrosis tisular grave. Usar vía central."
+            },
+            {
+                number: "13",
+                name: "Fentanilo",
+                composition: "Fentanilo citrato 0.05 mg/ml (50 mcg/ml).",
+                indications: "Anestesia, analgesia quirúrgica profunda, dolor agudo severo, sedoanalgesia en ventilación mecánica.",
+                contraindications: "Depresión respiratoria severa no controlada, intolerancia conocida a opioides.",
+                posology: "IV: 1 a 3 mcg/kg para inducción; infusión continua según esquema de sedación.",
+                presentation: "Ampollas inyectables.",
+                adverse: "Rigidez muscular de la caja torácica (tórax en madera si se inyecta rápido), bradicardia, apnea.",
+                warnings: "Crítica: Administrar lentamente en bolo. Mantener soporte ventilatorio inmediato listo para usar."
+            },
+            {
+                number: "14",
+                name: "Flumazenilo (Lanexat)",
+                composition: "Flumazenilo 0.1 mg/ml.",
+                indications: "Reversión total o parcial de los efectos sedantes de las benzodiazepinas.",
+                contraindications: "Intoxicaciones mixtas (especialmente con antidepresivos tricíclicos donde produce convulsiones).",
+                posology: "IV lenta: 0.2 mg en 15 seg; si no hay respuesta en 1 min, dar 0.3 mg; repetir hasta dosis máxima de 1 mg.",
+                presentation: "Ampollas inyectables.",
+                adverse: "Ansiedad, agitación, palpitaciones, convulsiones (en pacientes dependientes crónicos).",
+                warnings: "Monitorear la re-sedación debido a que la vida media del flumazenilo es más corta que la de las benzodiacepinas."
+            },
+            {
+                number: "15",
+                name: "Furosemida (Lasix)",
+                composition: "Furosemida 20 mg/2 ml.",
+                indications: "Edema agudo de pulmón, insuficiencia cardíaca congestiva, crisis hipertensiva, edema cerebral.",
+                contraindications: "Anuria refractaria, hipopotasemia severa, deshidratación grave, coma hepático.",
+                posology: "IV/IM/VO: 20 a 40 mg inicialmente; ajustar según diuresis y volumen.",
+                presentation: "Ampollas inyectables, comprimidos.",
+                adverse: "Hipopotasemia, deshidratación, hipotensión ortostática, ototoxicidad (con infusión IV rápida).",
+                warnings: "Crítica: Monitorear estrictamente el balance hídrico, presión arterial y electrólitos plasmáticos."
+            },
+            {
+                number: "16",
+                name: "Gluconato de Calcio 10%",
+                composition: "Gluconato de calcio 10% (100 mg/ml; 0.45 mEq/ml).",
+                indications: "Hiperpotasemia (estabilizador de membrana cardíaca), hipocalcemia severa sintomática, intoxicación por magnesio.",
+                contraindications: "Hipercalcemia extrema, fibrilación ventricular, pacientes digitalizados.",
+                posology: "IV lenta: 10 ml de solución al 10% infundidos en 5-10 minutos.",
+                presentation: "Ampollas inyectables al 10%.",
+                adverse: "Bradicardia, arritmia cardíaca si se inyecta rápido, necrosis local por extravasación.",
+                warnings: "Crítica: No administrar vía IM o SC. La infusión rápida puede ocasionar síncope o paro cardíaco."
+            },
+            {
+                number: "17",
+                name: "Haloperidol (Halopidol)",
+                composition: "Haloperidol 5 mg/ml.",
+                indications: "Agitación psicomotriz aguda, delirium, psicosis aguda, náuseas refractarias en cuidados paliativos.",
+                contraindications: "Coma, depresión severa del sistema nervioso central, enfermedad de Parkinson.",
+                posology: "IM/IV: 2.5 a 5 mg cada 4-8 horas según el grado de agitación.",
+                presentation: "Ampollas inyectables, tabletas, gotas.",
+                adverse: "Sintomatología extrapiramidal, prolongación del intervalo QT, somnolencia.",
+                warnings: "Crítica: Riesgo de arritmias ventriculares mortales si se administra IV. Monitorear ECG continuamente."
+            },
+            {
+                number: "18",
+                name: "Heparina Sódica",
+                composition: "Heparina sódica 5000 UI/ml o 25000 UI/5 ml.",
+                indications: "Prevención y tratamiento de la trombosis venosa profunda, embolia pulmonar, síndrome coronario agudo.",
+                contraindications: "Hemorragia activa severa, trombocitopenia grave inducida por heparina, endocarditis bacteriana.",
+                posology: "IV/SC: Bolo inicial de 80 UI/kg seguido de infusión de 18 UI/kg/hora ajustado según TTPa.",
+                presentation: "Viales multidosis inyectables.",
+                adverse: "Sangrado, trombocitopenia inducida por heparina (HIT), osteoporosis (uso prolongado).",
+                warnings: "Crítica: Requiere controles periódicos de laboratorio (TTPa o tiempo de coagulación). Su antídoto es el Sulfato de Protamina."
+            },
+            {
+                number: "19",
+                name: "Hidrocortisona (Solu-Cortef)",
+                composition: "Hidrocortisona succinato sódico 100 mg o 500 mg.",
+                indications: "Crisis asmática severa, shock anafiláctico secundario, insuficiencia suprarrenal aguda, shock séptico.",
+                contraindications: "Infecciones fúngicas sistémicas sin tratamiento apropiado.",
+                posology: "IV lenta/IM: 100 mg a 500 mg cada 6-8 horas según gravedad del cuadro.",
+                presentation: "Vial con polvo liofilizado y diluyente.",
+                adverse: "Hiperglucemia, retención de sodio, debilidad muscular, alteración psiquiátrica transitoria.",
+                warnings: "La inyección rápida puede causar parestesias perineales transitorias. Diluir y administrar en 3-5 minutos."
+            },
+            {
+                number: "20",
+                name: "Insulina Corriente (Rápida)",
+                composition: "Insulina humana regular 100 UI/ml.",
+                indications: "Cetoacidosis diabética, estado hiperosmolar, hiperpotasemia severa (junto con glucosa).",
+                contraindications: "Hipoglucemia documentada.",
+                posology: "IV/SC: Bolo de 0.1 UI/kg seguido de infusión continua de 0.1 UI/kg/h en cetoacidosis.",
+                presentation: "Frascos ampolla de 10 ml.",
+                adverse: "Hipoglucemia grave, hipopotasemia severa.",
+                warnings: "Crítica: La insulina corriente es la única apta para administración endovenosa continua."
+            },
+            {
+                number: "21",
+                name: "Ketamina (Ketalar)",
+                composition: "Ketamina clorhidrato 50 mg/ml.",
+                indications: "Inducción y mantenimiento de la anestesia, sedación para procedimientos dolorosos cortos, broncoespasmo refractario.",
+                contraindications: "Eclampsia, hipertensión intracraneal severa no controlada.",
+                posology: "IV: 1 a 2 mg/kg para inducción; IM: 4 a 10 mg/kg.",
+                presentation: "Viales inyectables.",
+                adverse: "Alucinaciones durante el despertar (emergencia psicomotora), taquicardia, aumento de la presión arterial.",
+                warnings: "Se puede asociar con una benzodiazepina (ej. Midazolam) para reducir la incidencia de pesadillas durante la recuperación."
+            },
+            {
+                number: "22",
+                name: "Labetalol",
+                composition: "Labetalol clorhidrato 5 mg/ml.",
+                indications: "Crisis hipertensiva de urgencia o emergencia (especialmente en el embarazo o disección aórtica).",
+                contraindications: "Asma bronquial, bradicardia sinusal severa, bloqueo AV mayor a primer grado, shock cardiogénico.",
+                posology: "IV lenta: 20 mg bolo inicial; repetir 40-80 mg cada 10 min (máximo 300 mg). O infusión a 2 mg/min.",
+                presentation: "Ampollas inyectables.",
+                adverse: "Hipotensión ortostática severa, broncoespasmo, bradicardia sintomática, mareo.",
+                warnings: "Crítica: El paciente debe permanecer en decúbito supino durante y hasta 3 horas después de la administración."
+            },
+            {
+                number: "23",
+                name: "Lidocaína 2% (Xilocaína)",
+                composition: "Lidocaína clorhidrato 20 mg/ml (2%).",
+                indications: "Anestesia local y regional, arritmias ventriculares asociadas a infarto agudo de miocardio.",
+                contraindications: "Bloqueos de conducción avanzados de segundo o tercer grado sin marcapasos activo.",
+                posology: "Arritmias: Bolo IV de 1-1.5 mg/kg; infusión posterior de mantenimiento de 1 a 4 mg/min.",
+                presentation: "Frascos ampolla de 20 ml y 50 ml.",
+                adverse: "Parestesias, desorientación, convulsiones por toxicidad del sistema nervioso central, bradicardia.",
+                warnings: "Crítica: Verificar que no contenga Epinefrina cuando sea administrada por vía endovenosa."
+            },
+            {
+                number: "24",
+                name: "Lorazepam (Trapax)",
+                composition: "Lorazepam 2 mg o 4 mg/ml.",
+                indications: "Tratamiento de elección en crisis convulsivas agudas prolongadas, sedación farmacológica extrema.",
+                contraindications: "Miastenia gravis, insuficiencia respiratoria severa, glaucoma de ángulo estrecho.",
+                posology: "IV lenta: 4 mg en bolo único administrado a una tasa de 2 mg/min; repetir si no cesa en 10-15 min.",
+                presentation: "Ampollas inyectables.",
+                adverse: "Somnolencia, depresión respiratoria, sedación residual prolongada.",
+                warnings: "Crítica: Mantener monitor de saturación continuo debido al rápido riesgo de apnea en adultos mayores."
+            },
+            {
+                number: "25",
+                name: "Sulfato de Magnesio 25%",
+                composition: "Sulfato de magnesio heptahidratado al 25% (250 mg/ml).",
+                indications: "Prevención y tratamiento de crisis convulsivas en eclampsia/preeclampsia, Torsión de puntas (arritmia).",
+                contraindications: "Bloqueo cardíaco severo, insuficiencia renal avanzada (riesgo de acumulación excesiva).",
+                posology: "Eclampsia: IV: 4 g diluidos administrados en 15-20 min; seguido de infusión de 1-2 g/hora.",
+                presentation: "Ampollas inyectables de 5 ml y 10 ml.",
+                adverse: "Pérdida de reflejo rotuliano (signo de toxicidad), bradicardia, parálisis muscular.",
+                warnings: "Crítica: Evaluar siempre la diuresis, reflejo rotuliano y frecuencia respiratoria del paciente bajo tratamiento."
+            },
+            {
+                number: "26",
+                name: "Midazolam (Dormicum)",
+                composition: "Midazolam clorhidrato 5 mg/ml o 15 mg/3 ml.",
+                indications: "Sedoanalgesia, inducción de la anestesia, estatus epiléptico, sedación paliativa.",
+                contraindications: "Insuficiencia respiratoria aguda sin asistencia mecánica disponible.",
+                posology: "IV lenta: 1 a 2.5 mg ajustando de manera individualizada.",
+                presentation: "Ampollas inyectables de distintas concentraciones.",
+                adverse: "Depresión respiratoria de rápido inicio, amnesia anterógrada, hipotensión arterial.",
+                warnings: "Crítica: Medicamento de alto riesgo de paro respiratorio si se infunde de manera veloz en bolo directo."
+            },
+            {
+                number: "27",
+                name: "Naloxona",
+                composition: "Naloxona clorhidrato 0.4 mg/ml.",
+                indications: "Reversión completa o parcial de la depresión del sistema nervioso central y respiratorio inducida por opioides.",
+                contraindications: "Hipersensibilidad conocida a la sustancia activa.",
+                posology: "IV/IM: 0.4 mg inicialmente; repetir cada 2-3 minutos según sea necesario hasta una dosis máxima de 10 mg.",
+                presentation: "Ampollas inyectables.",
+                adverse: "Síndrome de abstinencia agudo (agitación extrema, taquicardia, sudoración profusa), náuseas.",
+                warnings: "La duración del fentanilo o la morfina puede superar la de la naloxona, vigilar de cerca por re-sedación."
+            },
+            {
+                number: "28",
+                name: "Pantoprazol",
+                composition: "Pantoprazol (40 mg).",
+                indications: "Úlcera péptica, reflujo gastroesofágico severo, profilaxis de úlceras por estrés.",
+                contraindications: "Hipersensibilidad a benzimidazoles sustituidos.",
+                posology: "IV/VO: 40 mg una vez al día; puede aumentarse a 80 mg en patologías de hipersecreción.",
+                presentation: "Vial liofilizado para solución inyectable, comprimidos.",
+                adverse: "Cefalea, diarrea, dolor abdominal, hipomagnesemia (en tratamientos muy prolongados).",
+                warnings: "La administración IV debe realizarse lentamente en un lapso de 2 a 15 minutos."
+            },
+            {
+                number: "29",
+                name: "Metoclopramida (Reliveran, Primperan)",
+                composition: "Clorhidrato de metoclopramida (5 mg/ml o 10 mg).",
+                indications: "Náuseas y vómitos inducidos por quimioterapia o postoperatorios, gastroparesia diabética.",
+                contraindications: "Hemorragia, obstrucción o perforación gastrointestinal, feocromocitoma, antecedentes de disquinesia extrapiramidal.",
+                posology: "IV/IM/VO: 10 mg hasta 3 veces al día (máximo 30 mg/día).",
+                presentation: "Ampollas inyectables, comprimidos, gotas orales.",
+                adverse: "Somnolencia, lasitud, reacciones extrapiramidales (especialmente en jóvenes/dosis altas).",
+                warnings: "Crítica: Administrar IV de forma muy lenta (mínimo 3 min) para evitar acatisia intensa y pánico."
+            },
+            {
+                number: "30",
+                name: "Morfina (Cloruro de Morfina)",
+                composition: "Cloruro o sulfato de morfina (10 o 20 mg/ml).",
+                indications: "Dolor severo agudo o crónico, dolor oncológico, disnea asociada a insuficiencia ventricular izquierda.",
+                contraindications: "Depresión respiratoria grave, traumatismo craneoencefálico (presión intracraneal elevada), íleo paralítico.",
+                posology: "IV/IM/SC: 2.5-10 mg cada 4h ajustando según respuesta.",
+                presentation: "Ampollas inyectables, comprimidos de liberación prolongada, gotas.",
+                adverse: "Depresión respiratoria, sedación, estreñimiento, náuseas, hipotensión.",
+                warnings: "Crítica: Riesgo elevado de dependencia y depresión respiratoria. Tener siempre disponible Naloxona como antagonista."
+            }
+        ];
+
+        let medicaments = [...MEDICAMENTS_DATABASE];
+
+        // Al iniciar la carga de la página
+        window.addEventListener('DOMContentLoaded', () => {
+            initApp();
+        });
+
+        // Inicializar aplicación
+        function initApp() {
+            renderMedicaments();
+            lucide.createIcons();
+        }
+
+        // Renderizar las tarjetas
+        function renderMedicaments(dataToRender = null) {
+            const list = dataToRender || medicaments;
+            const grid = document.getElementById('cardsGrid');
+            const noResults = document.getElementById('noResults');
+            grid.innerHTML = '';
+
+            if (list.length === 0) {
+                noResults.classList.remove('hidden');
+                grid.classList.add('hidden');
+                updateMetrics(0);
+                return;
+            }
+
+            noResults.classList.add('hidden');
+            grid.classList.remove('hidden');
+
+            list.forEach((med, index) => {
+                const warningsStr = med.warnings ? med.warnings.toLowerCase() : "";
+                const isCritical = warningsStr.includes('crítica') || warningsStr.includes('critica');
+                const isWarning = med.warnings && med.warnings.length > 5 && !isCritical;
+                
+                // Determinar colores de borde según alerta
+                let cardStyle = "border-l-4 border-slate-200";
+                let alertBadge = "";
+                if (isCritical) {
+                    cardStyle = "border-l-4 border-rose-500 shadow-rose-50/50";
+                    alertBadge = `<span class="bg-rose-100 text-rose-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5"><i data-lucide="shield-alert" class="w-3 h-3"></i> CRÍTICA</span>`;
+                } else if (isWarning) {
+                    cardStyle = "border-l-4 border-amber-500 shadow-amber-50/50";
+                    alertBadge = `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5"><i data-lucide="alert-triangle" class="w-3 h-3"></i> PRECAUCIÓN</span>`;
+                }
+
+                // Vías de administración (identificar de la posología o presentación)
+                const routeBadges = [];
+                const lowerPosology = med.posology ? med.posology.toLowerCase() : "";
+                const lowerPresentation = med.presentation ? med.presentation.toLowerCase() : "";
+                if (lowerPosology.includes('iv') || lowerPresentation.includes('inyect') || lowerPresentation.includes('vial') || lowerPresentation.includes('ampolla')) routeBadges.push('<span class="bg-sky-50 text-sky-700 border border-sky-200 text-[10px] font-bold px-2 py-0.5 rounded">IV</span>');
+                if (lowerPosology.includes('im')) routeBadges.push('<span class="bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold px-2 py-0.5 rounded">IM</span>');
+                if (lowerPosology.includes('vo') || lowerPosology.includes('oral') || lowerPresentation.includes('comprimido') || lowerPresentation.includes('jarabe') || lowerPresentation.includes('tableta') || lowerPresentation.includes('cápsula')) routeBadges.push('<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded">VO</span>');
+                if (lowerPosology.includes('sc') || lowerPosology.includes('subcut')) routeBadges.push('<span class="bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold px-2 py-0.5 rounded">SC</span>');
+
+                // Tarjeta HTML
+                const card = document.createElement('article');
+                card.className = `bg-white rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-slate-300 transition-all duration-200 flex flex-col justify-between overflow-hidden cursor-pointer print-card ${cardStyle}`;
+                card.onclick = () => viewDetail(med, index);
+                
+                card.innerHTML = `
+                    <div class="p-5 flex-1 space-y-4">
+                        <!-- Cabecera de Tarjeta -->
+                        <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">N° ${med.number || (index+1)}</span>
+                                <h3 class="text-base font-bold text-slate-800 hover:text-clinical-700 transition-colors leading-snug">${med.name}</h3>
+                                <p class="text-xs text-slate-500 italic font-medium leading-relaxed">${med.composition}</p>
+                            </div>
+                            <div class="flex flex-col items-end gap-1.5 shrink-0">
+                                ${alertBadge}
+                                <div class="flex gap-1">${routeBadges.join('')}</div>
+                            </div>
+                        </div>
+
+                        <!-- Secciones de Información -->
+                        <div class="space-y-3 text-xs leading-relaxed">
+                            <div>
+                                <span class="font-bold text-slate-400 uppercase tracking-wide block mb-0.5">Indicaciones:</span>
+                                <p class="text-slate-600 line-clamp-2">${med.indications || "No registradas."}</p>
+                            </div>
+
+                            <div>
+                                <span class="font-bold text-slate-400 uppercase tracking-wide block mb-0.5">Posología & Administración:</span>
+                                <p class="text-clinical-700 font-semibold">${med.posology || "No registrada."}</p>
+                            </div>
+
+                            <div>
+                                <span class="font-bold text-red-400 uppercase tracking-wide block mb-0.5">Contraindicaciones:</span>
+                                <p class="text-red-700 font-medium line-clamp-2">${med.contraindications || "Ninguna registrada."}</p>
+                            </div>
+
+                            ${med.warnings ? `
+                            <div class="p-2.5 rounded-lg ${isCritical ? 'bg-rose-50 border border-rose-100 text-rose-800' : 'bg-amber-50/60 border border-amber-100 text-amber-900'}">
+                                <span class="font-bold text-[10px] uppercase tracking-wider block mb-0.5">Advertencia / Recomendación:</span>
+                                <p class="text-[11px] leading-tight font-medium line-clamp-2">${med.warnings}</p>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Footer de la Tarjeta -->
+                    <div class="bg-slate-50 px-5 py-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 no-print">
+                        <span class="flex items-center gap-1"><i data-lucide="package" class="w-3.5 h-3.5"></i> ${(med.presentation || "Varios").split(',')[0]}</span>
+                        <span class="text-clinical-600 hover:text-clinical-800 font-semibold flex items-center gap-0.5">Ver Ficha Completa <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></span>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+
+            lucide.createIcons();
+            updateMetrics(list.length);
+        }
+
+        // Actualizar métricas e indicadores
+        function updateMetrics(count) {
+            document.getElementById('statTotal').innerText = count;
+            
+            const countIV = medicaments.filter(med => {
+                const lowPos = med.posology ? med.posology.toLowerCase() : "";
+                const lowPres = med.presentation ? med.presentation.toLowerCase() : "";
+                return lowPos.includes('iv') || lowPres.includes('inyect') || lowPres.includes('vial') || lowPres.includes('ampolla');
+            }).length;
+            document.getElementById('statIV').innerText = countIV;
+
+            const countCritical = medicaments.filter(med => {
+                const lowWarn = med.warnings ? med.warnings.toLowerCase() : "";
+                return lowWarn.includes('crítica') || lowWarn.includes('critica');
+            }).length;
+            document.getElementById('statCritical').innerText = countCritical;
+        }
+
+        // Aplicar filtros de búsqueda
+        function applyFilters() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const route = document.getElementById('routeFilter').value;
+            const alert = document.getElementById('alertFilter').value;
+            const sort = document.getElementById('sortSelect').value;
+
+            let filtered = [...medicaments];
+
+            // 1. Filtrado por texto
+            if (query !== '') {
+                filtered = filtered.filter(med => 
+                    (med.name && med.name.toLowerCase().includes(query)) ||
+                    (med.composition && med.composition.toLowerCase().includes(query)) ||
+                    (med.indications && med.indications.toLowerCase().includes(query)) ||
+                    (med.posology && med.posology.toLowerCase().includes(query))
+                );
+            }
+
+            // 2. Filtrado por Vía de administración
+            if (route !== '') {
+                filtered = filtered.filter(med => {
+                    const lowPos = med.posology ? med.posology.toLowerCase() : "";
+                    const lowPres = med.presentation ? med.presentation.toLowerCase() : "";
+                    if (route === 'IV') return lowPos.includes('iv') || lowPres.includes('inyect') || lowPres.includes('vial') || lowPres.includes('ampolla');
+                    if (route === 'IM') return lowPos.includes('im');
+                    if (route === 'VO') return lowPos.includes('vo') || lowPos.includes('oral') || lowPres.includes('comprimido') || lowPres.includes('jarabe') || lowPres.includes('tableta');
+                    if (route === 'SC') return lowPos.includes('sc') || lowPos.includes('subcut');
+                    return true;
+                });
+            }
+
+            // 3. Filtrado por Alerta
+            if (alert !== '') {
+                filtered = filtered.filter(med => {
+                    const lowWarn = med.warnings ? med.warnings.toLowerCase() : "";
+                    const isCritical = lowWarn.includes('crítica') || lowWarn.includes('critica');
+                    const isWarning = med.warnings && med.warnings.length > 5 && !isCritical;
+                    
+                    if (alert === 'critical') return isCritical;
+                    if (alert === 'warning') return isWarning;
+                    if (alert === 'standard') return !isCritical && !isWarning;
+                    return true;
+                });
+            }
+
+            // 4. Ordenamiento
+            if (sort === 'name-asc') {
+                filtered.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+            } else if (sort === 'name-desc') {
+                filtered.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+            } else {
+                // index-asc
+                filtered.sort((a, b) => parseInt(a.number || 0) - parseInt(b.number || 0));
+            }
+
+            renderMedicaments(filtered);
+        }
+
+        // Limpiar filtros de búsqueda
+        function clearFiltersAndSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('routeFilter').value = '';
+            document.getElementById('alertFilter').value = '';
+            document.getElementById('sortSelect').value = 'index-asc';
+            applyFilters();
+        }
+
+        // Ver detalle del medicamento en Modal
+        function viewDetail(med, index) {
+            const lowWarn = med.warnings ? med.warnings.toLowerCase() : "";
+            const isCritical = lowWarn.includes('crítica') || lowWarn.includes('critica');
+            const isWarning = med.warnings && med.warnings.length > 5 && !isCritical;
+            
+            const modalHeader = document.getElementById('modalHeader');
+            
+            // Ajustar colores según nivel de peligro
+            if (isCritical) {
+                modalHeader.className = "px-6 py-4 text-white bg-rose-600 flex justify-between items-start";
+                document.getElementById('modalWarnings').className = "mt-1 text-sm leading-relaxed p-2.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-100 font-semibold";
+            } else if (isWarning) {
+                modalHeader.className = "px-6 py-4 text-white bg-amber-600 flex justify-between items-start";
+                document.getElementById('modalWarnings').className = "mt-1 text-sm leading-relaxed p-2.5 rounded-lg bg-amber-50 text-amber-900 border border-amber-100 font-semibold";
+            } else {
+                modalHeader.className = "px-6 py-4 text-white bg-clinical-700 flex justify-between items-start";
+                document.getElementById('modalWarnings').className = "mt-1 text-sm leading-relaxed p-2.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-100";
+            }
+
+            // Cargar datos
+            document.getElementById('modalIndex').innerText = `Ficha N° ${med.number || (index+1)}`;
+            document.getElementById('modalTitle').innerText = med.name || "Sin nombre";
+            document.getElementById('modalComposition').innerText = med.composition || "";
+            document.getElementById('modalIndications').innerText = med.indications || "No registradas.";
+            document.getElementById('modalContraindications').innerText = med.contraindications || "Ninguna registrada.";
+            document.getElementById('modalPosology').innerText = med.posology || "No registrada.";
+            document.getElementById('modalPresentation').innerText = med.presentation || "No especificada.";
+            document.getElementById('modalAdverse').innerText = med.adverse || "Ninguna registrada.";
+            
+            if (med.warnings) {
+                document.getElementById('modalWarningContainer').style.display = 'block';
+                document.getElementById('modalWarnings').innerText = med.warnings;
+            } else {
+                document.getElementById('modalWarningContainer').style.display = 'none';
+            }
+
+            // Configurar botones del modal de impresión de solo lectura
+            document.getElementById('modalPrintBtn').onclick = () => printCard(med);
+
+            openModal('detailModal');
+        }
+
+        // Abrir Modal
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            lucide.createIcons();
+        }
+
+        // Cerrar Modal
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        // Imprimir Ficha Única de Bolsillo (Solo Lectura)
+        function printCard(med) {
+            const printArea = document.getElementById('printArea');
+            const lowWarn = med.warnings ? med.warnings.toLowerCase() : "";
+            const isCritical = lowWarn.includes('crítica') || lowWarn.includes('critica');
+            
+            printArea.innerHTML = `
+                <div class="p-8 border-4 border-slate-800 rounded-xl max-w-2xl mx-auto space-y-6" style="page-break-inside: avoid;">
+                    <div class="border-b-2 border-slate-800 pb-4 flex justify-between items-start">
+                        <div>
+                            <span class="text-xs uppercase font-bold text-slate-500">Ficha N° ${med.number}</span>
+                            <h1 class="text-2xl font-black text-slate-900">${med.name}</h1>
+                            <p class="text-sm text-slate-600 font-bold italic">${med.composition}</p>
+                        </div>
+                        ${isCritical ? '<span style="border: 2px solid #000; padding: 2px 6px; font-weight: bold; font-size: 12px; border-radius: 4px;">ALERTA CRÍTICA</span>' : ''}
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 text-sm">
+                        <div>
+                            <h3 class="font-extrabold uppercase text-xs text-slate-800 border-b border-slate-300 pb-1 mb-1">Indicaciones</h3>
+                            <p class="text-slate-800">${med.indications || "No registradas."}</p>
+                        </div>
+                        <div>
+                            <h3 class="font-extrabold uppercase text-xs text-slate-800 border-b border-slate-300 pb-1 mb-1">Posología</h3>
+                            <p class="text-slate-900 font-bold">${med.posology || "No registrada."}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 text-sm pt-4 border-t border-slate-100">
+                        <div>
+                            <h3 class="font-extrabold uppercase text-xs text-slate-800 border-b border-slate-300 pb-1 mb-1">Contraindicaciones</h3>
+                            <p class="text-red-900 font-medium">${med.contraindications || "Ninguna."}</p>
+                        </div>
+                        <div>
+                            <h3 class="font-extrabold uppercase text-xs text-slate-800 border-b border-slate-300 pb-1 mb-1">Presentación</h3>
+                            <p class="text-slate-800">${med.presentation || "No especificada."}</p>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t-2 border-dashed border-slate-300 text-sm">
+                        <h3 class="font-extrabold uppercase text-xs text-slate-800 mb-1">Advertencias & Precauciones Críticas</h3>
+                        <p class="text-slate-900 bg-slate-100 p-3 rounded font-semibold border border-slate-300">${med.warnings || 'No especificadas.'}</p>
+                    </div>
+
+                    <div class="text-center text-[10px] text-slate-400 pt-4 border-t border-slate-200">
+                        Catálogo Vademécum Clínico - ${new Date().toLocaleDateString()}
+                    </div>
+                </div>
+            `;
+
+            window.print();
+        }
+    </script>
+</body>
+</html>
