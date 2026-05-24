@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Vademécum Clínico</title>
+    <title>Vademécum Clínico - Catálogo de Fichas</title>
     <!-- Tailwind CSS para el diseño responsivo -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -14,20 +14,12 @@
                         clinical: {
                             50: '#f0f9ff',
                             100: '#e0f2fe',
+                            200: '#bae6fd',
                             500: '#0284c7',
                             600: '#0369a1',
                             700: '#075985',
                             800: '#0c4a6e',
-                        },
-                        danger: {
-                            50: '#fef2f2',
-                            500: '#ef4444',
-                            700: '#b91c1c',
-                        },
-                        warning: {
-                            50: '#fffbeb',
-                            500: '#f59e0b',
-                            700: '#b45309',
+                            900: '#0f172a',
                         }
                     }
                 }
@@ -52,33 +44,41 @@
                 page-break-inside: avoid;
                 width: 100% !important;
                 max-width: 100% !important;
-                margin: 0 !important;
-                padding: 1.5rem !important;
+                margin: 0 0 1.5rem 0 !important;
+                padding: 0 !important;
+                display: block !important;
             }
             .print-container {
                 display: block !important;
                 width: 100% !important;
             }
+            .card-grid-layout {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 1rem !important;
+            }
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen font-sans flex flex-col antialiased">
+<body class="bg-slate-100 text-slate-800 min-h-screen font-sans flex flex-col antialiased">
 
-    <!-- Encabezado / Navbar (Simplificado - Sin botones de edición ni carga) -->
-    <header class="bg-gradient-to-r from-clinical-800 to-clinical-600 text-white shadow-md no-print">
-        <div class="max-w-7xl mx-auto px-4 py-5 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <!-- Encabezado Clínico de Alta Legibilidad -->
+    <header class="bg-clinical-900 text-white border-b-4 border-clinical-500 no-print">
+        <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <div class="bg-white/15 p-2.5 rounded-xl backdrop-blur-sm border border-white/10">
-                    <i data-lucide="book-open-check" class="w-8 h-8 text-sky-300"></i>
+                <div class="bg-clinical-700 p-2.5 rounded-lg border border-clinical-600 shadow-inner">
+                    <i data-lucide="clipboard-list" class="w-8 h-8 text-sky-400"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold tracking-tight">Vademécum Clínico</h1>
-                    <p class="text-xs text-sky-100 font-medium">Catálogo Digital de Medicamentos de Consulta Rápida</p>
+                    <h1 class="text-2xl font-black tracking-tight text-white flex items-center gap-2">
+                        VADEMÉCUM CLÍNICO <span class="text-xs bg-clinical-600 text-sky-200 px-2.5 py-0.5 rounded-full font-bold">EDICIÓN DE BOLSILLO</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 font-semibold tracking-wide uppercase mt-0.5">Catálogo de Fichas de Medicamentos de Consulta Rápida</p>
                 </div>
             </div>
-            <div class="flex items-center gap-2 text-xs bg-white/10 px-3 py-1.5 rounded-full border border-white/10">
-                <span class="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse"></span>
-                <span class="font-medium">Modo Catálogo Activo</span>
+            <div class="flex items-center gap-2 text-xs bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 shadow-sm">
+                <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                <span class="font-bold text-slate-300">MODO LECTURA DE CATÁLOGO</span>
             </div>
         </div>
     </header>
@@ -86,20 +86,29 @@
     <!-- Contenido Principal -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
 
-        <!-- Barra de Búsqueda y Filtros de Consulta -->
-        <section class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-4 no-print">
+        <!-- Panel de Filtros y Búsqueda estilo Dashboard Clínico -->
+        <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-4 no-print">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="sliders-horizontal" class="w-4 h-4 text-clinical-600"></i> Panel de Filtros y Consulta
+                </h2>
+                <button onclick="clearFiltersAndSearch()" class="text-xs font-semibold text-clinical-600 hover:text-clinical-800 flex items-center gap-1 transition-colors">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Restablecer filtros
+                </button>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
                 <!-- Buscador principal -->
                 <div class="relative md:col-span-5">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                         <i data-lucide="search" class="w-5 h-5"></i>
                     </div>
-                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Buscar por medicamento, composición o indicaciones..." class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinical-500 focus:border-clinical-500 text-sm">
+                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Buscar por medicamento, principio activo, indicaciones..." class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinical-500 text-sm font-medium">
                 </div>
                 
                 <!-- Filtrar por Vía -->
                 <div class="md:col-span-3">
-                    <select id="routeFilter" onchange="applyFilters()" class="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinical-500 text-sm">
+                    <select id="routeFilter" onchange="applyFilters()" class="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinical-500 text-sm font-semibold text-slate-700">
                         <option value="">Vía de Administración (Todas)</option>
                         <option value="IV">Intravenosa (IV)</option>
                         <option value="IM">Intramuscular (IM)</option>
@@ -110,17 +119,17 @@
 
                 <!-- Filtrar por Gravedad/Advertencias -->
                 <div class="md:col-span-2">
-                    <select id="alertFilter" onchange="applyFilters()" class="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinical-500 text-sm">
+                    <select id="alertFilter" onchange="applyFilters()" class="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinical-500 text-sm font-semibold text-slate-700">
                         <option value="">Nivel Alerta (Todos)</option>
-                        <option value="critical">Crítica (Rojo)</option>
-                        <option value="warning">Advertencia (Ámbar)</option>
+                        <option value="critical">Alerta Crítica</option>
+                        <option value="warning">Advertencia/Precaución</option>
                         <option value="standard">Normal</option>
                     </select>
                 </div>
 
                 <!-- Ordenamiento -->
                 <div class="md:col-span-2">
-                    <select id="sortSelect" onchange="applyFilters()" class="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinical-500 text-sm">
+                    <select id="sortSelect" onchange="applyFilters()" class="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-clinical-500 text-sm font-semibold text-slate-700">
                         <option value="index-asc">Orden original (N°)</option>
                         <option value="name-asc">Nombre (A-Z)</option>
                         <option value="name-desc">Nombre (Z-A)</option>
@@ -128,15 +137,15 @@
                 </div>
             </div>
 
-            <!-- Métricas Informativas Simplificadas (Sin botones de acción) -->
-            <div class="flex flex-wrap items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-500 gap-3">
+            <!-- Métricas Informativas Simplificadas -->
+            <div class="flex flex-wrap items-center justify-between pt-1 text-xs text-slate-500 gap-3">
                 <div class="flex gap-5">
-                    <span>Total Medicamentos: <strong id="statTotal" class="text-slate-800">0</strong></span>
-                    <span>Vía IV/Inyectable: <strong id="statIV" class="text-slate-800">0</strong></span>
-                    <span>Alertas Críticas: <strong id="statCritical" class="text-red-600 font-semibold">0</strong></span>
+                    <span>Total Fichas: <strong id="statTotal" class="text-slate-800 text-sm">0</strong></span>
+                    <span>Vías Inyectables/IV: <strong id="statIV" class="text-clinical-700 text-sm font-bold">0</strong></span>
+                    <span>Alertas de Alto Riesgo: <strong id="statCritical" class="text-rose-600 text-sm font-bold">0</strong></span>
                 </div>
-                <div class="text-slate-400 italic">
-                    Haz clic en cualquier tarjeta para ver su ficha técnica completa
+                <div class="text-slate-400 italic flex items-center gap-1">
+                    <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5"></i> Haz clic en una ficha para ampliar los detalles e imprimirla
                 </div>
             </div>
         </section>
@@ -158,64 +167,67 @@
     </main>
 
     <!-- Modal Detalle Ficha (Lectura / Impresión - Sin botones de edición o borrado) -->
-    <div id="detailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+    <div id="detailModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
             <!-- Encabezado Modal -->
             <div id="modalHeader" class="px-6 py-4 text-white flex justify-between items-start">
                 <div>
-                    <span id="modalIndex" class="inline-block text-[10px] uppercase font-bold tracking-wider bg-white/20 px-2 py-0.5 rounded-full mb-1">Ficha N° 0</span>
-                    <h2 id="modalTitle" class="text-2xl font-bold leading-tight">Cargando...</h2>
-                    <p id="modalComposition" class="text-sm text-white/85 italic mt-1"></p>
+                    <span id="modalIndex" class="inline-block text-[10px] uppercase font-bold tracking-wider bg-white/25 px-2.5 py-0.5 rounded-full mb-1">Ficha N° 0</span>
+                    <h2 id="modalTitle" class="text-2xl font-black leading-tight">Cargando...</h2>
+                    <p id="modalComposition" class="text-sm text-white/90 italic mt-1 font-semibold"></p>
                 </div>
                 <button onclick="closeModal('detailModal')" class="bg-white/10 hover:bg-white/20 p-1.5 rounded-lg transition-colors">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
 
-            <!-- Cuerpo del Modal -->
-            <div class="p-6 overflow-y-auto space-y-5" id="modalBody">
+            <!-- Cuerpo del Modal (Estilo Ficha Técnica Expandida) -->
+            <div class="p-6 overflow-y-auto space-y-4" id="modalBody">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Columna Izquierda -->
                     <div class="space-y-4">
-                        <div>
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><i data-lucide="activity" class="w-3.5 h-3.5"></i> Indicaciones</span>
-                            <p id="modalIndications" class="mt-1 text-slate-700 text-sm font-medium leading-relaxed"></p>
+                        <div class="bg-sky-50/70 border border-sky-100 p-3.5 rounded-xl">
+                            <span class="text-xs font-bold uppercase tracking-wider text-sky-800 flex items-center gap-1.5 mb-1.5"><i data-lucide="activity" class="w-4 h-4"></i> Indicaciones</span>
+                            <p id="modalIndications" class="text-slate-700 text-sm font-medium leading-relaxed"></p>
                         </div>
-                        <div>
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> Contraindicaciones</span>
-                            <p id="modalContraindications" class="mt-1 text-red-700 bg-red-50 p-2.5 rounded-lg border border-red-100 text-sm leading-relaxed"></p>
+                        <div class="bg-rose-50 border border-rose-100 p-3.5 rounded-xl">
+                            <span class="text-xs font-bold uppercase tracking-wider text-rose-800 flex items-center gap-1.5 mb-1.5"><i data-lucide="shield-alert" class="w-4 h-4"></i> Contraindicaciones</span>
+                            <p id="modalContraindications" class="text-slate-700 text-sm font-medium leading-relaxed"></p>
                         </div>
                     </div>
 
+                    <!-- Columna Derecha -->
                     <div class="space-y-4">
-                        <div>
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><i data-lucide="pill" class="w-3.5 h-3.5"></i> Posología</span>
-                            <p id="modalPosology" class="mt-1 text-clinical-800 bg-clinical-50 p-2.5 rounded-lg border border-clinical-100 text-sm font-semibold leading-relaxed"></p>
+                        <div class="bg-emerald-50 border border-emerald-100 p-3.5 rounded-xl">
+                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5 mb-1.5"><i data-lucide="pill" class="w-4 h-4"></i> Posología & Administración</span>
+                            <p id="modalPosology" class="text-slate-800 text-sm font-bold leading-relaxed"></p>
                         </div>
-                        <div>
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><i data-lucide="package" class="w-3.5 h-3.5"></i> Presentación</span>
-                            <p id="modalPresentation" class="mt-1 text-slate-700 text-sm leading-relaxed"></p>
+                        <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5 mb-1.5"><i data-lucide="package" class="w-4 h-4"></i> Presentación</span>
+                            <p id="modalPresentation" class="text-slate-700 text-sm font-medium leading-relaxed"></p>
                         </div>
                     </div>
                 </div>
 
-                <div class="border-t border-slate-100 pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Reacciones Adversas</span>
-                        <p id="modalAdverse" class="mt-1 text-amber-700 bg-amber-50/50 p-2.5 rounded-lg border border-amber-100 text-sm leading-relaxed"></p>
+                <!-- Segunda Sección inferior -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <div class="bg-amber-50/50 border border-amber-100 p-3.5 rounded-xl">
+                        <span class="text-xs font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1.5 mb-1.5"><i data-lucide="alert-triangle" class="w-4 h-4"></i> Reacciones Adversas (RAM)</span>
+                        <p id="modalAdverse" class="text-slate-700 text-sm leading-relaxed"></p>
                     </div>
-                    <div id="modalWarningContainer">
-                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1"><i data-lucide="octagon" class="w-3.5 h-3.5"></i> Advertencias y Precauciones</span>
-                        <p id="modalWarnings" class="mt-1 text-sm leading-relaxed p-2.5 rounded-lg"></p>
+                    <div id="modalWarningContainer" class="p-3.5 rounded-xl border">
+                        <span class="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1.5"><i data-lucide="octagon" class="w-4 h-4"></i> Advertencias y Precauciones</span>
+                        <p id="modalWarnings" class="text-sm font-semibold leading-relaxed"></p>
                     </div>
                 </div>
             </div>
 
-            <!-- Footer del Modal (Solo imprimir y cerrar) -->
+            <!-- Footer del Modal -->
             <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-between items-center">
-                <button onclick="closeModal('detailModal')" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100 transition-colors">
+                <button onclick="closeModal('detailModal')" class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
                     Cerrar
                 </button>
-                <button id="modalPrintBtn" class="flex items-center gap-1.5 bg-clinical-600 hover:bg-clinical-700 px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-colors shadow-sm">
+                <button id="modalPrintBtn" class="flex items-center gap-1.5 bg-clinical-600 hover:bg-clinical-700 px-5 py-2.5 rounded-lg text-sm font-bold text-white transition-colors shadow-md">
                     <i data-lucide="printer" class="w-4 h-4"></i> Imprimir Ficha de Bolsillo
                 </button>
             </div>
@@ -226,10 +238,10 @@
     <div id="printArea" class="hidden print-container"></div>
 
     <!-- Footer -->
-    <footer class="bg-slate-900 text-slate-400 text-xs py-6 mt-12 border-t border-slate-800 no-print">
+    <footer class="bg-clinical-900 text-slate-400 text-xs py-6 mt-12 border-t border-slate-800 no-print">
         <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
-            <p class="font-medium text-slate-300">Vademécum Clínico Profesional • Visualizador Médico Estático</p>
-            <p>La información contenida tiene fines formativos e informativos. Utilice con prudencia profesional bajo guías institucionales.</p>
+            <p class="font-bold text-slate-300">Vademécum Clínico Profesional • Diseño Adaptado de Fichas Médicas de Bolsillo</p>
+            <p class="text-slate-500">Toda la información ha sido importada de los registros del catálogo oficial.</p>
         </div>
     </footer>
 
@@ -565,7 +577,7 @@
                 posology: "IV/IM/SC: 2.5-10 mg cada 4h ajustando según respuesta.",
                 presentation: "Ampollas inyectables, comprimidos de liberación prolongada, gotas.",
                 adverse: "Depresión respiratoria, sedación, estreñimiento, náuseas, hipotensión.",
-                warnings: "Crítica: Riesgo elevado de dependencia y depresión respiratoria. Tener siempre disponible Naloxona como antagonista."
+                warnings: "Crítica: Riesgo de dependencia y depresión respiratoria. Tener siempre disponible Naloxona como antagonista."
             }
         ];
 
@@ -582,7 +594,7 @@
             lucide.createIcons();
         }
 
-        // Renderizar las tarjetas
+        // Renderizar las tarjetas con el nuevo estilo físico de "Ficha de Bolsillo"
         function renderMedicaments(dataToRender = null) {
             const list = dataToRender || medicaments;
             const grid = document.getElementById('cardsGrid');
@@ -604,76 +616,100 @@
                 const isCritical = warningsStr.includes('crítica') || warningsStr.includes('critica');
                 const isWarning = med.warnings && med.warnings.length > 5 && !isCritical;
                 
-                // Determinar colores de borde según alerta
-                let cardStyle = "border-l-4 border-slate-200";
-                let alertBadge = "";
+                // Determinar colores según nivel de alerta para el encabezado de la ficha
+                let headerClass = "bg-clinical-850 bg-gradient-to-r from-clinical-800 to-clinical-700 text-white";
+                let alertLabel = "";
+                let cardBorders = "border-slate-300 focus-within:ring-2 focus-within:ring-clinical-500";
+
                 if (isCritical) {
-                    cardStyle = "border-l-4 border-rose-500 shadow-rose-50/50";
-                    alertBadge = `<span class="bg-rose-100 text-rose-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5"><i data-lucide="shield-alert" class="w-3 h-3"></i> CRÍTICA</span>`;
+                    headerClass = "bg-gradient-to-r from-rose-700 to-red-600 text-white";
+                    cardBorders = "border-rose-400 focus-within:ring-2 focus-within:ring-rose-500";
+                    alertLabel = `<span class="bg-white/20 text-white border border-white/20 text-[9px] font-black px-2 py-0.5 rounded flex items-center gap-0.5 uppercase"><i data-lucide="shield-alert" class="w-3 h-3"></i> CRÍTICO</span>`;
                 } else if (isWarning) {
-                    cardStyle = "border-l-4 border-amber-500 shadow-amber-50/50";
-                    alertBadge = `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5"><i data-lucide="alert-triangle" class="w-3 h-3"></i> PRECAUCIÓN</span>`;
+                    headerClass = "bg-gradient-to-r from-amber-600 to-amber-500 text-white";
+                    cardBorders = "border-amber-400 focus-within:ring-2 focus-within:ring-amber-500";
+                    alertLabel = `<span class="bg-white/20 text-white border border-white/20 text-[9px] font-black px-2 py-0.5 rounded flex items-center gap-0.5 uppercase"><i data-lucide="alert-triangle" class="w-3 h-3"></i> ATENCIÓN</span>`;
                 }
 
-                // Vías de administración (identificar de la posología o presentación)
+                // Vías de administración formateadas
                 const routeBadges = [];
                 const lowerPosology = med.posology ? med.posology.toLowerCase() : "";
                 const lowerPresentation = med.presentation ? med.presentation.toLowerCase() : "";
-                if (lowerPosology.includes('iv') || lowerPresentation.includes('inyect') || lowerPresentation.includes('vial') || lowerPresentation.includes('ampolla')) routeBadges.push('<span class="bg-sky-50 text-sky-700 border border-sky-200 text-[10px] font-bold px-2 py-0.5 rounded">IV</span>');
-                if (lowerPosology.includes('im')) routeBadges.push('<span class="bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold px-2 py-0.5 rounded">IM</span>');
-                if (lowerPosology.includes('vo') || lowerPosology.includes('oral') || lowerPresentation.includes('comprimido') || lowerPresentation.includes('jarabe') || lowerPresentation.includes('tableta') || lowerPresentation.includes('cápsula')) routeBadges.push('<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded">VO</span>');
-                if (lowerPosology.includes('sc') || lowerPosology.includes('subcut')) routeBadges.push('<span class="bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold px-2 py-0.5 rounded">SC</span>');
+                if (lowerPosology.includes('iv') || lowerPresentation.includes('inyect') || lowerPresentation.includes('vial') || lowerPresentation.includes('ampolla')) routeBadges.push('<span class="bg-sky-100 text-sky-800 font-extrabold text-[9px] px-1.5 py-0.5 rounded border border-sky-300">IV</span>');
+                if (lowerPosology.includes('im')) routeBadges.push('<span class="bg-indigo-100 text-indigo-800 font-extrabold text-[9px] px-1.5 py-0.5 rounded border border-indigo-300">IM</span>');
+                if (lowerPosology.includes('vo') || lowerPosology.includes('oral') || lowerPresentation.includes('comprimido') || lowerPresentation.includes('jarabe') || lowerPresentation.includes('tableta') || lowerPresentation.includes('cápsula')) routeBadges.push('<span class="bg-emerald-100 text-emerald-800 font-extrabold text-[9px] px-1.5 py-0.5 rounded border border-emerald-300">VO</span>');
+                if (lowerPosology.includes('sc') || lowerPosology.includes('subcut')) routeBadges.push('<span class="bg-purple-100 text-purple-800 font-extrabold text-[9px] px-1.5 py-0.5 rounded border border-purple-300">SC</span>');
 
-                // Tarjeta HTML
+                // Crear elemento de ficha física
                 const card = document.createElement('article');
-                card.className = `bg-white rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-slate-300 transition-all duration-200 flex flex-col justify-between overflow-hidden cursor-pointer print-card ${cardStyle}`;
+                card.className = `bg-white rounded-xl shadow-sm border-2 ${cardBorders} hover:shadow-lg transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer print-card`;
                 card.onclick = () => viewDetail(med, index);
                 
                 card.innerHTML = `
-                    <div class="p-5 flex-1 space-y-4">
-                        <!-- Cabecera de Tarjeta -->
-                        <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
-                            <div class="space-y-1">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">N° ${med.number || (index+1)}</span>
-                                <h3 class="text-base font-bold text-slate-800 hover:text-clinical-700 transition-colors leading-snug">${med.name}</h3>
-                                <p class="text-xs text-slate-500 italic font-medium leading-relaxed">${med.composition}</p>
-                            </div>
-                            <div class="flex flex-col items-end gap-1.5 shrink-0">
-                                ${alertBadge}
-                                <div class="flex gap-1">${routeBadges.join('')}</div>
-                            </div>
+                    <!-- Encabezado de la Ficha Física -->
+                    <div class="${headerClass} p-4 flex justify-between items-start border-b-2 border-slate-300">
+                        <div class="space-y-0.5">
+                            <span class="text-[9px] uppercase font-black tracking-widest bg-white/15 px-1.5 py-0.5 rounded text-white/90">Ficha N° ${med.number || (index+1)}</span>
+                            <h3 class="text-base font-black tracking-tight leading-snug uppercase">${med.name}</h3>
+                            <p class="text-xs text-slate-100 italic font-medium leading-tight">${med.composition}</p>
                         </div>
-
-                        <!-- Secciones de Información -->
-                        <div class="space-y-3 text-xs leading-relaxed">
-                            <div>
-                                <span class="font-bold text-slate-400 uppercase tracking-wide block mb-0.5">Indicaciones:</span>
-                                <p class="text-slate-600 line-clamp-2">${med.indications || "No registradas."}</p>
-                            </div>
-
-                            <div>
-                                <span class="font-bold text-slate-400 uppercase tracking-wide block mb-0.5">Posología & Administración:</span>
-                                <p class="text-clinical-700 font-semibold">${med.posology || "No registrada."}</p>
-                            </div>
-
-                            <div>
-                                <span class="font-bold text-red-400 uppercase tracking-wide block mb-0.5">Contraindicaciones:</span>
-                                <p class="text-red-700 font-medium line-clamp-2">${med.contraindications || "Ninguna registrada."}</p>
-                            </div>
-
-                            ${med.warnings ? `
-                            <div class="p-2.5 rounded-lg ${isCritical ? 'bg-rose-50 border border-rose-100 text-rose-800' : 'bg-amber-50/60 border border-amber-100 text-amber-900'}">
-                                <span class="font-bold text-[10px] uppercase tracking-wider block mb-0.5">Advertencia / Recomendación:</span>
-                                <p class="text-[11px] leading-tight font-medium line-clamp-2">${med.warnings}</p>
-                            </div>
-                            ` : ''}
+                        <div class="flex flex-col items-end gap-1.5 shrink-0">
+                            ${alertLabel}
+                            <div class="flex gap-0.5">${routeBadges.join('')}</div>
                         </div>
                     </div>
 
-                    <!-- Footer de la Tarjeta -->
-                    <div class="bg-slate-50 px-5 py-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 no-print">
-                        <span class="flex items-center gap-1"><i data-lucide="package" class="w-3.5 h-3.5"></i> ${(med.presentation || "Varios").split(',')[0]}</span>
-                        <span class="text-clinical-600 hover:text-clinical-800 font-semibold flex items-center gap-0.5">Ver Ficha Completa <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></span>
+                    <!-- Estructura de Cajas Clínicas Internas (Imitando ficha física) -->
+                    <div class="grid grid-cols-1 divide-y divide-slate-200 text-[11px] leading-relaxed">
+                        
+                        <!-- Bloque: Indicaciones -->
+                        <div class="p-3 bg-sky-50/50">
+                            <span class="font-bold text-sky-800 uppercase tracking-wider block mb-0.5 text-[9px]">Indicación Terapéutica</span>
+                            <p class="text-slate-700 font-medium line-clamp-2">${med.indications || "No registradas."}</p>
+                        </div>
+
+                        <!-- Bloque de Posología (Muy Destacado en Verde Médico) -->
+                        <div class="p-3 bg-emerald-50/60">
+                            <span class="font-bold text-emerald-800 uppercase tracking-wider block mb-0.5 text-[9px]">Dosificación & Administración</span>
+                            <p class="text-emerald-950 font-black text-xs leading-snug">${med.posology || "No registrada."}</p>
+                        </div>
+
+                        <!-- Bloque de Contraindicaciones (En rojo pastel) -->
+                        <div class="p-3 bg-rose-50/70">
+                            <span class="font-bold text-rose-800 uppercase tracking-wider block mb-0.5 text-[9px]">Contraindicaciones Estrictas</span>
+                            <p class="text-red-900 font-bold line-clamp-2">${med.contraindications || "Ninguna registrada."}</p>
+                        </div>
+
+                        <!-- Bloque de Presentación / RAM -->
+                        <div class="grid grid-cols-2 divide-x divide-slate-200">
+                            <div class="p-2.5 bg-slate-50">
+                                <span class="font-bold text-slate-500 uppercase tracking-wider block mb-0.5 text-[8px]">Presentación</span>
+                                <p class="text-slate-700 font-medium line-clamp-1">${med.presentation || "Varios"}</p>
+                            </div>
+                            <div class="p-2.5 bg-amber-50/20">
+                                <span class="font-bold text-amber-700 uppercase tracking-wider block mb-0.5 text-[8px]">Reacción Adversa (RAM)</span>
+                                <p class="text-slate-700 line-clamp-1">${med.adverse || "Ninguna registrada."}</p>
+                            </div>
+                        </div>
+
+                        <!-- Bloque de Advertencias/Precauciones de Pie de Ficha -->
+                        ${med.warnings ? `
+                        <div class="p-3 ${isCritical ? 'bg-red-100 text-red-900 border-t border-rose-300' : 'bg-amber-100/80 text-amber-950 border-t border-amber-300'}">
+                            <div class="flex items-start gap-1.5">
+                                <i data-lucide="${isCritical ? 'shield-alert' : 'alert-triangle'}" class="w-3.5 h-3.5 shrink-0 mt-0.5 ${isCritical ? 'text-red-700' : 'text-amber-700'}"></i>
+                                <div>
+                                    <span class="font-black uppercase text-[8.5px] tracking-wider block leading-none mb-0.5">Advertencia Crítica</span>
+                                    <p class="text-[10px] font-bold leading-tight line-clamp-2">${med.warnings}</p>
+                                </div>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Pie de Tarjeta Estilo Catálogo de Ficha Técnica -->
+                    <div class="bg-slate-100 px-4 py-2 border-t border-slate-300 flex items-center justify-between text-[10px] text-slate-500 font-bold no-print">
+                        <span class="flex items-center gap-1"><i data-lucide="printer" class="w-3 h-3 text-slate-400"></i> Ficha Lista</span>
+                        <span class="text-clinical-700 hover:text-clinical-900 flex items-center gap-0.5">AMPLIAR DETALLES <i data-lucide="chevron-right" class="w-3 h-3"></i></span>
                     </div>
                 `;
 
@@ -777,20 +813,24 @@
             const isWarning = med.warnings && med.warnings.length > 5 && !isCritical;
             
             const modalHeader = document.getElementById('modalHeader');
+            const modalWarningContainer = document.getElementById('modalWarningContainer');
             
-            // Ajustar colores según nivel de peligro
+            // Ajustar colores de alerta del modal
             if (isCritical) {
-                modalHeader.className = "px-6 py-4 text-white bg-rose-600 flex justify-between items-start";
-                document.getElementById('modalWarnings').className = "mt-1 text-sm leading-relaxed p-2.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-100 font-semibold";
+                modalHeader.className = "px-6 py-4 text-white bg-gradient-to-r from-red-700 to-rose-600 flex justify-between items-start border-b border-rose-800";
+                modalWarningContainer.className = "p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-950";
+                document.getElementById('modalWarnings').className = "text-sm font-bold text-red-900";
             } else if (isWarning) {
-                modalHeader.className = "px-6 py-4 text-white bg-amber-600 flex justify-between items-start";
-                document.getElementById('modalWarnings').className = "mt-1 text-sm leading-relaxed p-2.5 rounded-lg bg-amber-50 text-amber-900 border border-amber-100 font-semibold";
+                modalHeader.className = "px-6 py-4 text-white bg-gradient-to-r from-amber-600 to-amber-500 flex justify-between items-start border-b border-amber-700";
+                modalWarningContainer.className = "p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-950";
+                document.getElementById('modalWarnings').className = "text-sm font-bold text-amber-900";
             } else {
-                modalHeader.className = "px-6 py-4 text-white bg-clinical-700 flex justify-between items-start";
-                document.getElementById('modalWarnings').className = "mt-1 text-sm leading-relaxed p-2.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-100";
+                modalHeader.className = "px-6 py-4 text-white bg-gradient-to-r from-clinical-800 to-clinical-700 flex justify-between items-start border-b border-clinical-900";
+                modalWarningContainer.className = "p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800";
+                document.getElementById('modalWarnings').className = "text-sm font-medium text-slate-700";
             }
 
-            // Cargar datos
+            // Cargar datos en el modal
             document.getElementById('modalIndex').innerText = `Ficha N° ${med.number || (index+1)}`;
             document.getElementById('modalTitle').innerText = med.name || "Sin nombre";
             document.getElementById('modalComposition').innerText = med.composition || "";
@@ -801,13 +841,13 @@
             document.getElementById('modalAdverse').innerText = med.adverse || "Ninguna registrada.";
             
             if (med.warnings) {
-                document.getElementById('modalWarningContainer').style.display = 'block';
+                modalWarningContainer.style.display = 'block';
                 document.getElementById('modalWarnings').innerText = med.warnings;
             } else {
-                document.getElementById('modalWarningContainer').style.display = 'none';
+                modalWarningContainer.style.display = 'none';
             }
 
-            // Configurar botones del modal de impresión de solo lectura
+            // Configurar botones
             document.getElementById('modalPrintBtn').onclick = () => printCard(med);
 
             openModal('detailModal');
@@ -828,52 +868,79 @@
             document.body.classList.remove('overflow-hidden');
         }
 
-        // Imprimir Ficha Única de Bolsillo (Solo Lectura)
+        // Imprimir Ficha Única de Bolsillo (Aspecto idéntico al físico)
         function printCard(med) {
             const printArea = document.getElementById('printArea');
             const lowWarn = med.warnings ? med.warnings.toLowerCase() : "";
             const isCritical = lowWarn.includes('crítica') || lowWarn.includes('critica');
+            const isWarning = med.warnings && med.warnings.length > 5 && !isCritical;
+
+            let borderStyle = "border-color: #0f172a;";
+            let headerStyle = "background: #0f172a; color: #ffffff;";
+            if (isCritical) {
+                borderStyle = "border-color: #e11d48;";
+                headerStyle = "background: #e11d48; color: #ffffff;";
+            } else if (isWarning) {
+                borderStyle = "border-color: #d97706;";
+                headerStyle = "background: #d97706; color: #ffffff;";
+            }
             
             printArea.innerHTML = `
-                <div class="p-8 border-4 border-slate-800 rounded-xl max-w-2xl mx-auto space-y-6" style="page-break-inside: avoid;">
-                    <div class="border-b-2 border-slate-800 pb-4 flex justify-between items-start">
+                <div class="p-0 border-4 rounded-xl max-w-2xl mx-auto overflow-hidden font-sans" style="${borderStyle} page-break-inside: avoid;">
+                    <!-- Cabecera de Ficha Física -->
+                    <div class="p-5 flex justify-between items-start" style="${headerStyle}">
                         <div>
-                            <span class="text-xs uppercase font-bold text-slate-500">Ficha N° ${med.number}</span>
-                            <h1 class="text-2xl font-black text-slate-900">${med.name}</h1>
-                            <p class="text-sm text-slate-600 font-bold italic">${med.composition}</p>
+                            <span style="font-size: 10px; text-transform: uppercase; font-weight: 900; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px;">Ficha de Bolsillo N° ${med.number}</span>
+                            <h1 style="font-size: 20px; font-weight: 900; margin: 4px 0 2px 0; text-transform: uppercase;">${med.name}</h1>
+                            <p style="font-size: 12px; font-style: italic; opacity: 0.95; margin: 0;">${med.composition}</p>
                         </div>
-                        ${isCritical ? '<span style="border: 2px solid #000; padding: 2px 6px; font-weight: bold; font-size: 12px; border-radius: 4px;">ALERTA CRÍTICA</span>' : ''}
+                        ${isCritical ? '<span style="border: 2px solid #fff; padding: 2px 8px; font-weight: 900; font-size: 11px; border-radius: 4px; background: rgba(0,0,0,0.15);">CRÍTICO</span>' : ''}
                     </div>
 
-                    <div class="grid grid-cols-2 gap-6 text-sm">
-                        <div>
-                            <h3 class="font-extrabold uppercase text-xs text-slate-800 border-b border-slate-300 pb-1 mb-1">Indicaciones</h3>
-                            <p class="text-slate-800">${med.indications || "No registradas."}</p>
+                    <!-- Tabla de Celdas de la Ficha Técnica -->
+                    <div style="display: grid; grid-template-columns: 1fr; border-top: 2px solid #cbd5e1; gap: 0;">
+                        
+                        <!-- Bloque de Indicaciones -->
+                        <div style="padding: 12px; background: #f0f9ff; border-bottom: 1px solid #cbd5e1;">
+                            <span style="font-size: 10px; font-weight: 900; color: #0369a1; text-transform: uppercase; display: block; margin-bottom: 2px;">Indicaciones Terapéuticas</span>
+                            <p style="font-size: 13px; color: #1e293b; margin: 0;">${med.indications || "No registradas."}</p>
                         </div>
-                        <div>
-                            <h3 class="font-extrabold uppercase text-xs text-slate-800 border-b border-slate-300 pb-1 mb-1">Posología</h3>
-                            <p class="text-slate-900 font-bold">${med.posology || "No registrada."}</p>
+
+                        <!-- Bloque de Posología -->
+                        <div style="padding: 12px; background: #ecfdf5; border-bottom: 1px solid #cbd5e1;">
+                            <span style="font-size: 10px; font-weight: 900; color: #047857; text-transform: uppercase; display: block; margin-bottom: 2px;">Posología y Vías de Administración</span>
+                            <p style="font-size: 14px; font-weight: 900; color: #064e3b; margin: 0;">${med.posology || "No registrada."}</p>
                         </div>
+
+                        <!-- Bloque de Contraindicaciones -->
+                        <div style="padding: 12px; background: #fff5f5; border-bottom: 1px solid #cbd5e1;">
+                            <span style="font-size: 10px; font-weight: 900; color: #be123c; text-transform: uppercase; display: block; margin-bottom: 2px;">Contraindicaciones</span>
+                            <p style="font-size: 13px; font-weight: 700; color: #7f1d1d; margin: 0;">${med.contraindications || "Ninguna registrada."}</p>
+                        </div>
+
+                        <!-- Bloque de Detalle e Presentación -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #cbd5e1; background: #f8fafc;">
+                            <div style="padding: 10px; border-right: 1px solid #cbd5e1;">
+                                <span style="font-size: 9px; font-weight: 900; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 2px;">Presentación</span>
+                                <p style="font-size: 12px; color: #334155; margin: 0;">${med.presentation || "No especificada."}</p>
+                            </div>
+                            <div style="padding: 10px; background: #fffbeb;">
+                                <span style="font-size: 9px; font-weight: 900; color: #b45309; text-transform: uppercase; display: block; margin-bottom: 2px;">Reacciones Adversas (RAM)</span>
+                                <p style="font-size: 12px; color: #451a03; margin: 0;">${med.adverse || "No registradas."}</p>
+                            </div>
+                        </div>
+
+                        <!-- Banner de Advertencias de Pie -->
+                        ${med.warnings ? `
+                        <div style="padding: 12px; background: #fef3c7; color: #78350f;">
+                            <span style="font-size: 10px; font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 2px;">⚠️ Advertencias y Precauciones</span>
+                            <p style="font-size: 12px; font-weight: 700; margin: 0; line-height: 1.4;">${med.warnings}</p>
+                        </div>
+                        ` : ''}
                     </div>
 
-                    <div class="grid grid-cols-2 gap-6 text-sm pt-4 border-t border-slate-100">
-                        <div>
-                            <h3 class="font-extrabold uppercase text-xs text-slate-800 border-b border-slate-300 pb-1 mb-1">Contraindicaciones</h3>
-                            <p class="text-red-900 font-medium">${med.contraindications || "Ninguna."}</p>
-                        </div>
-                        <div>
-                            <h3 class="font-extrabold uppercase text-xs text-slate-800 border-b border-slate-300 pb-1 mb-1">Presentación</h3>
-                            <p class="text-slate-800">${med.presentation || "No especificada."}</p>
-                        </div>
-                    </div>
-
-                    <div class="pt-4 border-t-2 border-dashed border-slate-300 text-sm">
-                        <h3 class="font-extrabold uppercase text-xs text-slate-800 mb-1">Advertencias & Precauciones Críticas</h3>
-                        <p class="text-slate-900 bg-slate-100 p-3 rounded font-semibold border border-slate-300">${med.warnings || 'No especificadas.'}</p>
-                    </div>
-
-                    <div class="text-center text-[10px] text-slate-400 pt-4 border-t border-slate-200">
-                        Catálogo Vademécum Clínico - ${new Date().toLocaleDateString()}
+                    <div style="text-align: center; font-size: 10px; color: #94a3b8; padding: 10px; background: #f1f5f9; border-top: 1px solid #cbd5e1;">
+                        Catálogo Oficial de Fichas Médicas de Consulta de Bolsillo • Impreso en ${new Date().toLocaleDateString()}
                     </div>
                 </div>
             `;
